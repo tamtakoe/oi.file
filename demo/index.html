@@ -1,0 +1,53 @@
+<!doctype html>
+<html xmlns:ng="http://angularjs.org" xmlns:oi="https://github.com/tamtakoe" lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>My HTML File</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="lib/fancybox/jquery.fancybox.css">
+    <link rel="stylesheet" href="css/app.css">
+    <!--[if lte IE 8]>
+      <script src="lib/JSON/json2.js"></script>
+    <![endif]-->
+    <!-- Fix for old browsers -->
+    <script src="lib/shim/es5-shim.min.js"></script>
+
+    <script src="lib/jquery/jquery-1.10.2.min.js"></script>
+    <script src="lib/jquery/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="lib/fancybox/jquery.fancybox.pack.js"></script>
+    <script src="lib/angular_1_2/angular.min.js"></script>
+    <script src="lib/angular_1_2/angular-resource.min.js"></script>
+
+    <script src="js/fancybox.js"></script>  
+    <script src="js/ui.js"></script>
+    <script src="js/oi.list.js"></script>
+    <script src="js/oi.file.js"></script>
+    <script src="js/uploaderApp.js"></script>
+
+</head>
+<body id="ng-app" ng-app="uploaderApp" ng-controller="MyCtrl">
+    <div class="album">
+        <div class="file-button-area">
+            <input type="file" class="file-input" multiple="multiple" oi-file="uploadoptions">
+        </div>
+        <div class="error-area">
+            <div class="alert alert-error" ng-show="errors.length">              
+                <button class="close" ng-click="errors.length=0">&times;</button>
+                <span ng-repeat="error in errors | unique">{{error.msg}}<br/></span>
+            </div>
+        </div>
+        <ul class="upload-area" oi-file="uploadoptions" ui-sortable="{stop: sort}" ng-class="dropClass" ng-model="items">
+            <li class="file-item" ng-repeat="item in items">
+                <button type="button" class="close" ng-click="del($index, abort())">&times;</button>
+                <a href="{{item.image}}" ui-fancybox title="id {{item.id}}: {{item.original}}"><img class="file-item-img" ng-src="{{item.thumb}}"></a>
+                <div ng-show="item.progress">
+                    <div class="progress">
+                        <div class="bar" ng-style="{'width': item.progress+'%'}"></div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        Можно перетаскивать на серую область
+    </div>
+</body>
+</html>
