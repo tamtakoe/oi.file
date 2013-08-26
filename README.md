@@ -60,10 +60,10 @@ $scope.options = {
       file.$preview($scope.items[i]);
       
       //Загружаем на сервер
-      file.$upload('uploader.php' + id, $scope.items[i], {allowedType: ["jpeg", "jpg", "png", "gif"]})
+      file.$upload('uploader.php' + id, $scope.items[i], {allowedType: ["jpeg", "jpg", "png"]})
         .catch(function (data) {
           //Удаляем элемент при неудачной загрузке
-          $scope.del($scope.getIndexById(data.item.id));
+          $scope.del(data.item.id);
         })
     })
   }
@@ -71,26 +71,28 @@ $scope.options = {
 ```
 *Метод `catch` доступен, начиная с Ангуляра 1.2. В старых версиях используйте вместо него `then(null, function (data) {...})`*
 
-`$preview` и `$upload` возвращают обещания. См. [$q](http://www.angular.ru/api/ng.$q)
-
-Пример с уменьшением изображения на клиенте:
-```javascript
-file.$preview($scope.items[i])
-  .then(function (data) {
-    //Изображение прочитано. Уменьшаем его с помощью canvas
-    minimize(file._file);
-    //Отправляем
-    file.$upload('uploader.php' + id, $scope.items[i])
-    
-  }, function (data) {
-    //Изображение не прочитано. Отправляем как есть
-    file.$upload('uploader.php' + id, $scope.items[i])
-  });
-```
+`$preview` и `$upload` возвращают обещания. См. [$q](http://www.angular.ru/api/ng.$q).
 
 Третим параметром в методе `$upload` идет объект с параметрами валидации.
 Модуль загрузки имеет встроенную функцию валидации, которую можно переопределить.
 Аналогично можно переопределить функцию обработки ошибок.
+
+Пример с уменьшением изображения на клиенте:
+```javascript
+file.$preview({})
+  .then(function (data) {
+    //Изображение прочитано. Уменьшаем его с помощью canvas
+    minimize(file._file);
+    //Отправляем
+    file.$upload('uploader.php', $scope.avatar)
+    
+  }, function (data) {
+    //Изображение не прочитано. Отправляем как есть
+    file.$upload('uploader.php', $scope.avatar)
+  });
+```
+
+
 
 Настроку по умолчанию можно переопределить в сервисе-переменной `oiFileConfig`
 
@@ -119,21 +121,22 @@ file.$preview($scope.items[i])
         - `errorBigSize: "Вес не более 4 МБ"`,
         - `errorMaxQuantity: "Загружено максимальное количество файлов: 100"`,
         - `errorMaxSize: "Осталось 2,3 МБ свободного места"`
-    - **return** `{object}` - массив объектов ошибок `[{msg: 'текст ошибки', code: 'код'}, {...}, ... ]`
+    - **return** `{object}` - массив ошибок `[{msg: 'текст ошибки', code: 'код'}, {...}, ... ]`
 
 - **setError** `function (code, data)`. Обработка ошибок
     - **code** `{string}` - код ошибки
     - **data** `{object}` - xhr (или макет, при загрузке через iframe), дополненный полями:
         - `item: {...}`,     *модель, в которую осуществлялась загрузка*
         - `response: {...}`, *ответ сервера, раскодированный из JSON*
+    - **return** `{object}` - объект: `{item: модель, response: массив ошибок}`
 
-- **url** `{string}`.          Путь по умолчанию до скрипта загрузки - 'uploader.php'
-- **fieldName** `{string}`.    Ключ в массиве $_FILES - 'Files'
-- **fileClass** `{string}`.    Имя класса, если перетаскивается файл - 'dragover-file'
-- **notFileClass** `{string}`. Имя класса, если перетаскивается не файл - 'dragover-plain'
+- **url** `{string}`.          Путь по умолчанию до скрипта загрузки *'uploader.php'*
+- **fieldName** `{string}`.    Ключ в массиве $_FILES *'Files'*
+- **fileClass** `{string}`.    Имя класса, если перетаскивается файл *'dragover-file'*
+- **notFileClass** `{string}`. Имя класса, если перетаскивается не файл *'dragover-plain'*
 
-Имена полей, добавляемых в модель
-- **fileName** `{string}`.     Имя файла - 'filename'
-- **fileThumb** `{string}`.    Ссылка на миниатюру - 'thumb',
-- **fileSize** `{string}`.     Размер файла - 'size',
-- **fileProgress** `{string}`. Процент загрузки (в конце это поле удалится) - 'progress'
+Имена полей, добавляемых в модель:
+- **fileName** `{string}`.     Имя файла *'filename'*
+- **fileThumb** `{string}`.    Ссылка на миниатюру *'thumb'*,
+- **fileSize** `{string}`.     Размер файла *'size'*,
+- **fileProgress** `{string}`. Процент загрузки (в конце это поле удалится) *'progress'*
