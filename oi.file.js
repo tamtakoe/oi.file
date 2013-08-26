@@ -2,7 +2,7 @@
 
 /** 
 * oi.file v.1.0
-* https://github.com/tamtakoe/oiFile
+* https://github.com/tamtakoe/oi.file
 * Oleg Istomin 2013
 *
 * Licensed under the MIT license:
