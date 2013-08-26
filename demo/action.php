@@ -33,7 +33,7 @@ try {
                 'files'        => array(
                     array('field' => 'original', 'dir' => 'files_original/', 'fit' => true,      'width' => 1200, 'height' => 1200, 'ext' => 'jpg'),
                     array('field' => 'image',    'dir' => 'files_image/',    'fit' => 'contain', 'width' => 800,  'height' => 800,  'ext' => 'jpg'),
-                    array('field' => 'thumb',    'dir' => 'files_thumb/',    'fit' => 'cover',   'width' =>  160, 'height' => 160,  'ext' => 'png')
+                    array('field' => 'thumb',    'dir' => 'files_thumb/',    'fit' => 'cover',   'width' => 160,  'height' => 160,  'ext' => 'png')
                 ),
                 'maxSize'          => '4M',
                 'maxSpace'         => '100M',
