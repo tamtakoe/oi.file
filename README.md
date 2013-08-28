@@ -1,142 +1,142 @@
-oi.file — Загрузчик файлов для AngularJS
+oi.file — AngularJS file uploader
 =======
 
 
-## Основные особенности
+## Key features
 
-* Выбор файлов через проводник и перетаскиванием
-* Валидация
-* Загрузка картинки до загрузки на сервер (если браузер поддерживает FileReader)
-* Загрузка файлов через xhr и iframe (для старых браузеров)
-* Данные о файлах внедряются в модель, но могут быть получены отдельно
-* Файлы передаются методом POST по одному запросу на каждый файл 
+* File selection from explorer/finder and by drag'n'drop
+* Validation
+* Image upload before posting to server (if browser supports FileReader)
+* Image upload via xhr and iframe (for older browsers)
+* Files data are embedded into a model, but can be read separately
+* Files are uploaded using POST method, each request per file
 
-[Демонстрация](http://tamtakoe.ru/uploader/), [песочница](http://plnkr.co/edit/HKbvgle4zqfqCKcpLJDi?p=preview)
+[Demo](http://tamtakoe.ru/uploader/), [sandbox](http://plnkr.co/edit/HKbvgle4zqfqCKcpLJDi?p=preview)
 
-## Применение
+## Usage
 
-Подключение модуля:
+Angular module dependency:
 ```javascript
 angular.module('myApp', ['oi.file']);
 ```
 
-Использование директивы:
+As a directive:
 ```html
-<!-- Загрузка через проводник -->
+<!-- Uploading via explorer/finder -->
 <input type="file" oi-file="options">
 
-<!-- Загрузка перетаскиванием на область -->
+<!-- Uploading by dragging into drop area -->
 <ul oi-file="options">
   <li ng-repeat="item in items">
     <img ng-src="{{item.thumb}}"> 
   </li>
 </ul>
 ```
-*Кстати, перетаскивать можно и на кнопку выбора файлов*
+*By the way, you can drop right onto the select files button*
 
-Настройка загрузки файла в контроллере:
+File upload setup in controller:
 ```javascript
-$scope.file = {} //Модель
+$scope.file = {} //Model
 $scope.options = {
-  //Вызывается для каждого выбранного файла
+  //Called for each selected file
   change: function (file) {
-      //В file содержится информация о файле
-      //Загружаем на сервер
+      //file contains info about the uploaded file
+      //uploading to server
       file.$upload('uploader.php', $scope.file)
     })
   }
 }
 ```
 
-Создание элемента модели для каждого файла:
+Creating model element for each file
 ```javascript
 $scope.items = model
 $scope.options = {
   change: function (file) {
-    //Создаем пустой элемент для будущего файла
+    //Creating empty element for future file
     $scope.add(function (i, id) {
     
-      //Загружаем картинку через FileReader до загрузки на сервер
+      //Uploading the file via FileReader before main server post
       file.$preview($scope.items[i]);
       
-      //Загружаем на сервер
+      //Uploading the file
       file.$upload('uploader.php' + id, $scope.items[i], {allowedType: ["jpeg", "jpg", "png"]})
         .catch(function (data) {
-          //Удаляем элемент при неудачной загрузке
+          //Removing element if something goes wrong
           $scope.del(data.item.id);
         })
     })
   }
 }
 ```
-*Метод `catch` доступен, начиная с Ангуляра 1.2. В старых версиях используйте вместо него `then(null, function (data) {...})`*
+*`catch` method is available starting from Angular 1.2. If you're using older versions, then use `then(null, function (data) {...})` instead.*
 
-`$preview` и `$upload` возвращают обещания. См. [$q](http://www.angular.ru/api/ng.$q).
+`$preview` and `$upload` return promises. See [$q](http://www.angular.ru/api/ng.$q).
 
-Третим параметром в методе `$upload` идет объект с параметрами валидации.
-Модуль загрузки имеет встроенную функцию валидации, которую можно переопределить.
-Аналогично можно переопределить функцию обработки ошибок.
+Third argument in `$upload` method is a validation params object.
+Upload module has validation function built-in, which can be overriden.
+Same way you can override the function of error handling.
 
-Пример с уменьшением изображения на клиенте:
+Example with image resizing on client-side:
 ```javascript
 file.$preview({})
   .then(function (data) {
-    //Изображение прочитано. Уменьшаем его с помощью canvas
+    //Image is read by this moment. Resizing it with canvas
     minimize(file._file);
-    //Отправляем
+    //Sending
     file.$upload('uploader.php', $scope.avatar)
     
   }, function (data) {
-    //Изображение не прочитано. Отправляем как есть
+    //Image hasn't been read. Sending as is
     file.$upload('uploader.php', $scope.avatar)
   });
 ```
 
 
 
-Настройку по умолчанию можно переопределить в сервисе-переменной `oiFileConfig`
+Default settings can be overridden in a service variable `oiFileConfig`
 
-## Настройка
-- **change** `function (file)`. Получение объекта файла. Если null — не обрабатывается
-    - **file** `{object}` - объект файла, содержащий информацию о выбранном файле и методы:
-       - $preview `function (item, [field])`      *item - модель, field - поле, куда будет записано изображение в формате dataUrl (если не указано, запишется в поле по умолчанию).
-                                                   Возвращает обещание с колбеками: `success`, `error`*
-       - $upload `function (url, item, [permit])` *url - скрипт загрузки, item - модель, permit - объект параметров валидации (см. ниже).
-                                                   Возвращает обещание с колбеками: `success`, `error`, `notice`*
+## Setting up
+- **change** `function (file)`. Getting the file object. If it is `null` - doing nothing.
+    - **file** `{object}` - File object, that contains info about selected file and methods: 
+       - $preview `function (item, [field])`      *item -model, field - field, where the image in `dataUrl` format is written (writing here unless specified otherwise).
+                                                   Returns promises with `success`, `error` callbacks*
+       - $upload `function (url, item, [permit])` *url - upload script, item - model, permit - validation settings object (see below).
+                                                   Returns promises with `success`, `error`, `notice` callbacks*
 
-       В колбеки обещаний `$preview` и `$upload` передается xhr (или макет, при загрузке через iframe), дополненный полями:
-       `item: {...}`     *модель, в которую осуществлялась загрузка* и
-       `response: {...}` *ответ сервера, раскодированный из JSON*
+       In promises' callbacks `$preview` и `$upload`  xhr is passed with additional fields: 
+       `item: {...}`     *model into which the uploading is performed* and
+       `response: {...}` *server response, decodeed from JSON*
 
-- **validate** `function (file, permit)`. Валидация файлов
-    - **file** `{object}`   - объект файла
-    - **permit** `{object}` - параметры для валидации. Пример:
-        - `allowedType: ["jpeg", "jpg", "png", "gif"]`, *список разрешенных расширений*
-        - `maxNumberOfFiles: 100`, *максимальное количество файлов*
-        - `maxSize: 4194304`,      *максимальный размер файла*
-        - `maxSpace: 104857600`,   *максимально доступное место на сервере*
-        - `quantity: 3`,           *загружено файлов*
-        - `space: 481208`,         *занято места*
-        - `errorBadType: "Можно загружать: JPEG, JPG, PNG, GIF"`, *Фразы ошибок...*
-        - `errorBigSize: "Вес не более 4 МБ"`,
-        - `errorMaxQuantity: "Загружено максимальное количество файлов: 100"`,
-        - `errorMaxSize: "Осталось 2,3 МБ свободного места"`
-    - **return** `{object}` - массив ошибок `[{msg: 'текст ошибки', code: 'код'}, {...}, ... ]`
+- **validate** `function (file, permit)`. Files validation
+    - **file** `{object}`   - file object
+    - **permit** `{object}` - validation params. Example:
+        - `allowedType: ["jpeg", "jpg", "png", "gif"]`, *whitelist of extensions*
+        - `maxNumberOfFiles: 100`, *maximum number of files*
+        - `maxSize: 4194304`,      *maximum file size*
+        - `maxSpace: 104857600`,   *maximum server storage space available*
+        - `quantity: 3`,           *files uploaded*
+        - `space: 481208`,         *storage place taken*
+        - `errorBadType: "You can upload only: JPEG, JPG, PNG, GIF"`, *Error messages...*
+        - `errorBigSize: "The file is too big"`,
+        - `errorMaxQuantity: "Maximum number of uploaded files exceeded: 100"`,
+        - `errorMaxSize: "Only 2,3 МB of free space is left"`
+    - **return** `{object}` - array of error objects `[{msg: 'error msg', code: 'код'}, {...}, ... ]`
 
-- **setError** `function (code, data)`. Обработка ошибок
-    - **code** `{string}` - код ошибки
-    - **data** `{object}` - xhr (или макет, при загрузке через iframe), дополненный полями:
-        - `item: {...}`,     *модель, в которую осуществлялась загрузка*
-        - `response: {...}`, *ответ сервера, раскодированный из JSON*
-    - **return** `{object}` - объект: `{item: модель, response: массив ошибок}`
+- **setError** `function (code, data)`. Error handling
+    - **code** `{string}` - error code
+    - **data** `{object}` - xhr with additional fields
+        - `item: {...}`,     *model, into which the uploading is performed*
+        - `response: {...}`, *server response, decoded from JSON*
+    - **return** `{object}` - object: `{item: model, response: errors array}`
 
-- **url** `{string}`.          Путь по умолчанию до скрипта загрузки *'uploader.php'*
-- **fieldName** `{string}`.    Ключ в массиве $_FILES *'Files'*
-- **fileClass** `{string}`.    Имя класса, если перетаскивается файл *'dragover-file'*
-- **notFileClass** `{string}`. Имя класса, если перетаскивается не файл *'dragover-plain'*
+- **url** `{string}`.          Default url to uploader script *'uploader.php'*
+- **fieldName** `{string}`.    $_FILES array key *'Files'*
+- **fileClass** `{string}`.    Draggable file class name *'dragover-file'*
+- **notFileClass** `{string}`. Draggable non-file class name *'dragover-plain'*
 
-Имена полей, добавляемых в модель:
-- **fileName** `{string}`.     Имя файла *'filename'*
-- **fileThumb** `{string}`.    Ссылка на миниатюру *'thumb'*,
-- **fileSize** `{string}`.     Размер файла *'size'*,
-- **fileProgress** `{string}`. Процент загрузки (в конце это поле удалится) *'progress'*
+Fiels added to model:
+- **fileName** `{string}`.     File name *'filename'*
+- **fileThumb** `{string}`.    Thumbnail reference *'thumb'*,
+- **fileSize** `{string}`.     File size *'size'*,
+- **fileProgress** `{string}`. Upload percentage (will be removed in the end) *'progress'*
