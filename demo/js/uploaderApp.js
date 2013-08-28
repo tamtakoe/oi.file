@@ -23,23 +23,23 @@ angular.module('uploaderApp', ['ngResource', 'oi.list', 'oi.file', 'ui.sortable'
               
                 file.$preview($scope.items[i]).then(
                     function (data) {
-                      console.log('success', data)
+                      console.log('preview success', data)
                     },
                     function (data) {
-                      console.log('error', data);
+                      console.log('preview error', data);
                     });
                 
                 file.$upload(url + data.id, $scope.items[i], data.settings).then(
                     function (data) {
-                      console.log('success', data)
+                      console.log('upload success', data)
                     },
                     function (data) {
-                      console.log('error', data);
+                      console.log('upload error', data);
                       $scope.errors = angular.isArray($scope.errors) ? $scope.errors.concat(data.response) : [].concat(data.response);
                       $scope.del($scope.getIndexById(data.item.id));
                     },
                     function (data) {
-                      console.log('notify', data)
+                      console.log('upload notify', data)
                     })
               })
             }
