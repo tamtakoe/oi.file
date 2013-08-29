@@ -303,8 +303,8 @@ angular.module('oi.file', [])
               
               //Вычисляем общий прогресс загрузки всех файлов
               for (var i = 0, n = uploadingItems.length, totalAll = 0, loadedAll = 0; i < n; i++) {
-                totalAll  = totalAll  + !!uploadingItems[i][opts.fileSize];
-                loadedAll = loadedAll + !!uploadingItems[i][opts.fileLoaded];
+                totalAll  = totalAll  + uploadingItems[i][opts.fileSize];
+                loadedAll = loadedAll + uploadingItems[i][opts.fileLoaded] ? uploadingItems[i][opts.fileLoaded] : 0;
               }
               scope[opts.filesLoadedAll]   = loadedAll;
               scope[opts.filesProgressAll] = Math.round(loadedAll * 100 / totalAll);
