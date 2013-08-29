@@ -140,4 +140,9 @@ Fiels added to model:
 - **fileName** `{string}`.     File name *'filename'*
 - **fileThumb** `{string}`.    Thumbnail reference *'thumb'*,
 - **fileSize** `{string}`.     File size *'size'*,
+- **fileLoaded** `{string}`.   Loaded, bytes *'loaded'*
 - **fileProgress** `{string}`. Upload percentage (will be removed in the end) *'progress'*
+
+Fiels added to scope:
+- **filesLoadedAll** `{string}`.   Loaded from uploaded files, bytes - *'loadedAll'*
+- **filesProgressAll** `{string}`. All files upload percentage (will be undefined in the end) - *'progressAll'*
