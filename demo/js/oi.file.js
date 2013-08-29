@@ -1,7 +1,7 @@
 'use strict';
 
 /** 
-* oi.file v.1.0
+* oi.file v.1.1
 * https://github.com/tamtakoe/oi.file
 * Oleg Istomin 2013
 *
@@ -277,7 +277,7 @@ angular.module('oi.file', [])
           }
           item._file._form ? _iframeTransport(url, item, uploadDeferred) : _xhrTransport(url, item, uploadDeferred);
           
-          return uploadDeferred.promise
+          return uploadDeferred.promise;
         }
         
         //xhr-загрузчик
@@ -313,7 +313,7 @@ angular.module('oi.file', [])
               xhr.data.totalAll  = totalAll;
               xhr.data.loadedAll = loadedAll;
               
-              if (uploadDeferred.notify) uploadDeferred.notify(xhr)
+              if (uploadDeferred.notify) uploadDeferred.notify(xhr);
             });
           }, false);
 
@@ -394,7 +394,7 @@ angular.module('oi.file', [])
             } catch (e) {}
             
             form.remove(); //Удаляем скрытую форму
-            delete item._file //удаляем техническую информацию о загружаемом файле из модели
+            delete item._file; //удаляем техническую информацию о загружаемом файле из модели
 
             scope.$apply(function () {
               if (response && !response.error) { //Нельзя узнать статус загрузки во фрейм, поэтому ошибка определяется наличием параметра error в ответе
