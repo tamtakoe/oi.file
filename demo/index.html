@@ -36,6 +36,11 @@
                 <span ng-repeat="error in errors | unique">{{error.msg}}<br/></span>
             </div>
         </div>
+        <div ng-show="progressAll">
+            <div class="progress">
+                <div class="bar" ng-style="{'width': progressAll+'%'}"></div>
+            </div>
+        </div>
         <ul class="upload-area" oi-file="uploadoptions" ui-sortable="{stop: sort}" ng-class="dropClass" ng-model="items">
             <li class="file-item" ng-repeat="item in items">
                 <button type="button" class="close" ng-click="del($index, abort())">&times;</button>

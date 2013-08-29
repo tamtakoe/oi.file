@@ -2,7 +2,7 @@
 
 /** 
 * oi.file v.1.0
-* https://github.com/tamtakoe/oiFile
+* https://github.com/tamtakoe/oi.file
 * Oleg Istomin 2013
 *
 * Licensed under the MIT license:
@@ -17,13 +17,14 @@
 *                                                  //Возвращает обещание с колбеками: success, error, notice
 *
 *  В колбеки обещания передается xhr (или макет, при загрузке через iframe), дополненный полями:
-*  item: {...}     //модель, в которую осуществлялась загрузка
-*  response: {...} //ответ сервера, раскодированный из JSON
+*  item: {...}           //модель, в которую осуществлялась загрузка
+*  response: {...}       //ответ сервера, раскодированный из JSON
+*  uploadingItems: [...] //Массив элементов, загружающийся в данный момент
 *
 * @validate function. Валидация файлов
 *   - file object   - объект файла
 *   - permit object - параметры для валидации. Пример:
-*         allowedType: Array["jpeg", "jpg", "png", "gif"], //список разрешенных расширений
+*         allowedType: ["jpeg", "jpg", "png", "gif"], //список разрешенных расширений
 *         maxNumberOfFiles: 100, //максимальное количество файлов
 *         maxSize: 4194304,      //максимальный размер файла
 *         maxSpace: 104857600,   //максимально доступное место на сервере
@@ -49,8 +50,13 @@
 * Имена полей, добавляемых в модель
 * @fileName string.     Имя файла - 'filename'
 * @fileThumb string.    Ссылка на миниатюру - 'thumb',
-* @fileSize string.     Размер файла - 'size',
+* @fileSize string.     Размер файла, байт - 'size',
+* @fileLoaded string.   Количество загруженный байт - 'loaded'
 * @fileProgress string. Процент загрузки (в конце это поле удалится) - 'progress'
+*
+* Имена полей, добавляемых в область видимости
+* @filesLoadedAll string.   Количество загруженный байт в загружаемых файлах - 'loadedAll'
+* @filesProgressAll string. Процент загрузки всех загружаемых файлов - 'progressAll'
 */
 
 angular.module('oi.file', [])
@@ -95,16 +101,18 @@ angular.module('oi.file', [])
 
       if (!errors.length) {
         switch (code) {
-          case 'drop'    : errors.push({msg: 'Перетаскивание файлов не поддерживается. Обновите браузер'}); break;
-          case 'validate': errors.push({msg: 'Файл не прошел валидацию'});                                  break;
-          case 'preview' : errors.push({msg: 'Чтение миниматюр не поддерживается. Обновите браузер'});      break;
-          case 'load'    : errors.push({msg: 'Невозможно загрузить файл. Нет соединения с интернетом'});    break;
-          case 'upload'  : errors.push({msg: 'Невозможно загрузить файл. Проблемы на сервере'});            break;
-          case 'abort'   : errors.push({msg: 'Загрузка прервана'});                                         break;
+          case 'drop'    : errors.push({msg: 'Перетаскивание файлов не поддерживается. Обновите браузер', code: code}); break;
+          case 'validate': errors.push({msg: 'Файл не прошел валидацию', code: code});                                  break;
+          case 'preview' : errors.push({msg: 'Чтение миниматюр не поддерживается. Обновите браузер', code: code});      break;
+          case 'load'    : errors.push({msg: 'Невозможно загрузить файл. Нет соединения с интернетом', code: code});    break;
+          case 'upload'  : errors.push({msg: 'Невозможно загрузить файл. Проблемы на сервере', code: code});            break;
+          case 'abort'   : errors.push({msg: 'Загрузка прервана', code: code});                                         break;
         }
       }
-      if (data.item.progress) delete data.item.progress;
-      
+      if (data.item[this.fileLoaded]) {
+        delete data.item[this.fileLoaded]; //Сбрасываем прогресс
+        delete data.item[this.fileProgress];
+      }
       return {item: data.item, response: errors};
     },
     
@@ -118,10 +126,17 @@ angular.module('oi.file', [])
     fileName:     'filename',
     fileThumb:    'thumb',
     fileSize:     'size',
-    fileProgress: 'progress'
+    fileLoaded:   'loaded',
+    fileProgress: 'progress',
+    
+    //Поля, добавляемые в область видимости
+    filesLoadedAll:   'loadedAll',
+    filesProgressAll: 'progressAll'
   })
   
   .directive('oiFile', ['oiFileConfig', '$q', '$compile', function (oiFileConfig, $q, $compile) {
+    var uploadingItems = [];
+    
     return {
       link: function (scope, element, attrs) {
     
@@ -239,7 +254,7 @@ angular.module('oi.file', [])
             
           } else if (typeof opts.preview === 'function') {
             //Чтение файлов не поддерживается
-            previewDeferred.reject(opts.setError('preview', {item: item, response: null}));
+            previewDeferred.reject(opts.setError('preview', {item: item, response: null}))
           }
           
           return previewDeferred.promise;
@@ -258,11 +273,11 @@ angular.module('oi.file', [])
           
           if (errors) {
             uploadDeferred.reject(opts.setError('validate', {item: item, data: errors}));
-            return uploadDeferred.promise;
+            return uploadDeferred.promise
           }
           item._file._form ? _iframeTransport(url, item, uploadDeferred) : _xhrTransport(url, item, uploadDeferred);
           
-          return uploadDeferred.promise;
+          return uploadDeferred.promise
         }
         
         //xhr-загрузчик
@@ -276,24 +291,42 @@ angular.module('oi.file', [])
           angular.forEach( item._file.headers, function (value, name) {
             xhr.setRequestHeader(name, value);
           });
-          
+          xhr.uploadingItems = uploadingItems;
+          uploadingItems.push(item);         
+              
           xhr.upload.addEventListener('progress', function (e) {
-            xhr.data = e;
 
             scope.$apply(function () {
-              item.progress = e.lengthComputable ? Math.round(e.loaded * 100 / e.total) : null;
-              if (uploadDeferred.notify) uploadDeferred.notify(xhr);
+              //Вычисляем прогресс загрузки файла
+              item[opts.fileLoaded]   = e.lengthComputable ? e.loaded : undefined;
+              item[opts.fileProgress] = e.lengthComputable ? Math.round(e.loaded * 100 / e.total) : undefined;
+              
+              //Вычисляем общий прогресс загрузки всех файлов
+              for (var i = 0, n = uploadingItems.length, totalAll = 0, loadedAll = 0; i < n; i++) {
+                totalAll  = totalAll  + !!uploadingItems[i][opts.fileSize];
+                loadedAll = loadedAll + !!uploadingItems[i][opts.fileLoaded];
+              }
+              scope[opts.filesLoadedAll]   = loadedAll;
+              scope[opts.filesProgressAll] = Math.round(loadedAll * 100 / totalAll);
+
+              xhr.data = e;
+              xhr.data.totalAll  = totalAll;
+              xhr.data.loadedAll = loadedAll;
+              
+              if (uploadDeferred.notify) uploadDeferred.notify(xhr)
             });
-          }, false );
+          }, false);
 
           xhr.addEventListener('load', function () {
-                   
+                  
             var response = xhr.data = _parseJSON(xhr.responseText);
-            
+
             delete item._file; //удаляем техническую информацию о загружаемом файле из модели
-            delete item.progress;
-            
+            delete item[opts.fileProgress];
+            delete item[opts.fileLoaded];
+
             scope.$apply(function () {
+              updateProgressAll(item, uploadingItems);
 
               if (xhr.status === 200 && response) {
                 angular.extend(item, response);
@@ -309,6 +342,7 @@ angular.module('oi.file', [])
             xhr.data = _parseJSON(xhr.responseText);
             
             scope.$apply(function () {
+              updateProgressAll(item, uploadingItems);
               uploadDeferred.reject(opts.setError('load', xhr));
             });
           }, false);
@@ -317,6 +351,7 @@ angular.module('oi.file', [])
             xhr.data = _parseJSON(xhr.responseText);
             
             scope.$apply(function () {
+              updateProgressAll(item, uploadingItems);
               uploadDeferred.reject(opts.setError('abort', xhr));
             });
           }, false);
@@ -359,7 +394,7 @@ angular.module('oi.file', [])
             } catch (e) {}
             
             form.remove(); //Удаляем скрытую форму
-            delete item._file; //удаляем техническую информацию о загружаемом файле из модели
+            delete item._file //удаляем техническую информацию о загружаемом файле из модели
 
             scope.$apply(function () {
               if (response && !response.error) { //Нельзя узнать статус загрузки во фрейм, поэтому ошибка определяется наличием параметра error в ответе
@@ -373,6 +408,18 @@ angular.module('oi.file', [])
           });
           
           form[0].submit();
+        }
+        
+        //Удаляем загрузившиеся элементы из списка загружаемых
+        function updateProgressAll (item, uploadingItems) {
+        
+          for (var i = 0, n = uploadingItems.length; i < n; i++) {
+            if (item === uploadingItems[i]) uploadingItems.splice(i);
+          }
+          if (!uploadingItems.length) {
+            scope[opts.filesLoadedAll]   = undefined;
+            scope[opts.filesProgressAll] = undefined;
+          }
         }
         
         //Парсим JSON
