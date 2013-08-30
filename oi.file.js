@@ -307,10 +307,12 @@ angular.module('oi.file', [])
               item[opts.fileProgress] = e.lengthComputable ? Math.round(e.loaded * 100 / e.total) : undefined;
               
               //Вычисляем общий прогресс загрузки всех файлов
-              for (var i = 0, n = uploadingItems.length, totalAll = 0, loadedAll = 0; i < n; i++) {
+              for (var i = 0, n = uploadingItems.length, totalAll = 0, loadedAll = 0, undo = true; i < n; i++) {
+                if (item === uploadingItems[i]) undo = false;
                 totalAll  = totalAll  + uploadingItems[i][opts.fileSize];
                 loadedAll = loadedAll + (uploadingItems[i][opts.fileLoaded] !== undefined ? uploadingItems[i][opts.fileLoaded] : uploadingItems[i][opts.fileSize]);
               }
+              if (undo) uploadingItems.push(item); //Восстанавливаем список загружающихся файлов, если браузер не успел получить уведомление о прогрессе
               scope[opts.filesLoadedAll]   = loadedAll;
               scope[opts.filesProgressAll] = Math.round(loadedAll * 100 / totalAll);
 
