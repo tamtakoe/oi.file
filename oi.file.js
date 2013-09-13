@@ -182,7 +182,10 @@ angular.module('oi.file', [])
           })
         
         //Выбор файлов в диалоге
-          .bind('change', function () {
+            .bind('change', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+
             _add(this.files ? this.files : this);
             //_add(this);
           });
