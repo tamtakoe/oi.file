@@ -167,9 +167,11 @@ angular.module('oi.list', [])
       function del (index, beforeDel) {
         delCount++
         
+        index = this.$index !== undefined ? this.$index : index;
+        
         if (typeof beforeDel === 'function') beforeDel(index);
 
-        if (typeof dataRes[index].id !== 'undefined') { 
+        if (dataRes[index] !== undefined && dataRes[index].id !== undefined) { 
           
           //Удаление с сервера
           var delItem = dataRes[index];

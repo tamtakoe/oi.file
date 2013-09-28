@@ -325,7 +325,7 @@ angular.module('oi.file', [])
             
               queue[0].item._file._form ? _iframeTransport(queue[0]) : _xhrTransport(queue[0]);
               
-              queue[0].deferred.promise.finally(function () { //Работает с AngularJS 1.2. В старых версиях используйте all вместо finally
+              queue[0].deferred.promise.all(function () {
                 //Удаляем этот и переходим к следующему элементу очереди в случае завершения загрузки или ошибки (в т. ч. из-за отмены)
                 queue.shift();
                 _uploadQueue();
@@ -389,8 +389,6 @@ angular.module('oi.file', [])
               queue.loaded += uObj.item[opts.fileLoaded];
               queue.progress = Math.round(queue.loaded * 100 / queue.total);
               xhr.data = e;
-              
-              uObj.deferred.notify(xhr); //Работает с AngularJS 1.2. Не используйте в старых версиях
             });
           }, false);
 

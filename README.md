@@ -11,6 +11,7 @@ oi.file — AngularJS file uploader
 * Image upload via xhr and iframe (for older browsers)
 * Files data are embedded into a model, but can be read separately
 * Files are uploaded using POST method, each request per file
+* For AngularJS 1.2+, but there is `oi.file.old.js` for old versions
 
 [Demo](http://tamtakoe.ru/uploader/), [sandbox](http://plnkr.co/edit/HKbvgle4zqfqCKcpLJDi?p=preview)
 
@@ -136,13 +137,18 @@ Default settings can be overridden in a service variable `oiFileConfig`
 - **fileClass** `{string}`.    Draggable file class name *'dragover-file'*
 - **notFileClass** `{string}`. Draggable non-file class name *'dragover-plain'*
 
-Fiels added to model:
-- **fileName** `{string}`.     File name *'filename'*
-- **fileThumb** `{string}`.    Thumbnail reference *'thumb'*,
-- **fileSize** `{string}`.     File size *'size'*,
-- **fileLoaded** `{string}`.   Loaded, bytes *'loaded'*
-- **fileProgress** `{string}`. Upload percentage (will be removed in the end) *'progress'*
+Fields added to model (for each file):
+- **fileName** `{string}`.      File name *'filename'*
+- **fileThumb** `{string}`.     Thumbnail reference *'thumb'*,
+- **fileSize** `{string}`.      File size *'size'*,
+- **fileLoaded** `{string}`.    Loaded, bytes (will be removed in the end) *'loaded'*
+- **fileProgress** `{string}`.  Upload percentage (will be removed in the end) *'progress'*
+- **fileUploading** `{string}`. Находится ли файл в процессе загрузки *'uploading'*
 
-Fiels added to scope:
-- **filesLoadedAll** `{string}`.   Loaded from uploaded files, bytes - *'loadedAll'*
-- **filesProgressAll** `{string}`. All files upload percentage (will be undefined in the end) - *'progressAll'*
+Fields added to scope:
+- **queue** `{string}`. Upload queue *'uploading'*. Очередь загрузки - 'uploading'. Contains a general options:
+                 queue.total    - all files size, bytes
+                 queue.loaded   - all files loaded, bytes
+                 queue.progress - all files upload percentage
+                 queue.all      - number of uploaded files
+                 queue.lenght   - number of remaining files (native option)

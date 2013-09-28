@@ -36,16 +36,16 @@
                 <span ng-repeat="error in errors | unique">{{error.msg}}<br/></span>
             </div>
         </div>
-        <div ng-show="progressAll">
+        <div ng-show="uploading.length">
             <div class="progress">
-                <div class="bar" ng-style="{'width': progressAll+'%'}"></div>
+                <div class="bar" ng-style="{'width': uploading.progress+'%'}"></div>
             </div>
         </div>
         <ul class="upload-area" oi-file="uploadoptions" ui-sortable="{stop: sort}" ng-class="dropClass" ng-model="items">
             <li class="file-item" ng-repeat="item in items">
-                <button type="button" class="close" ng-click="del($index, abort())">&times;</button>
-                <a href="{{item.image}}" ui-fancybox title="id {{item.id}}: {{item.original}}"><img class="file-item-img" ng-src="{{item.thumb}}"></a>
-                <div ng-show="item.progress">
+                <button type="button" class="close" ng-click="del(); item.$abort()">&times;</button>
+                <a href="{{item.image}}" ui-fancybox title="№ {{item.id}} <a href='{{item.original}}'>оригинал</a>"><img class="file-item-img" ng-src="{{item.thumb}}"></a>
+                <div ng-show="item.uploading">
                     <div class="progress">
                         <div class="bar" ng-style="{'width': item.progress+'%'}"></div>
                     </div>
