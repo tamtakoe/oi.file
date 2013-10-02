@@ -151,4 +151,4 @@ Fields added to scope:
   - queue.loaded   - all files loaded, bytes
   - queue.progress - all files upload percentage
   - queue.all      - number of uploaded files
-  - queue.lenght   - number of remaining files (native option)
+  - queue.length   - number of remaining files (native option)
