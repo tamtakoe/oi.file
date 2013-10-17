@@ -146,9 +146,9 @@ Fields added to model (for each file):
 - **fileUploading** `{string}`. Находится ли файл в процессе загрузки *'uploading'*
 
 Fields added to scope:
-- **queue** `{string}`. Upload queue *'uploading'*. Очередь загрузки - 'uploading'. Contains a general options:
-                 queue.total    - all files size, bytes
-                 queue.loaded   - all files loaded, bytes
-                 queue.progress - all files upload percentage
-                 queue.all      - number of uploaded files
-                 queue.lenght   - number of remaining files (native option)
+- **queue** `{string}`. Upload queue *'uploading'*. Contains a general options:
+  - queue.total    - all files size, bytes
+  - queue.loaded   - all files loaded, bytes
+  - queue.progress - all files upload percentage
+  - queue.all      - number of uploaded files
+  - queue.length   - number of remaining files (native option)
