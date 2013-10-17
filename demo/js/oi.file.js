@@ -7,75 +7,21 @@
 *
 * Licensed under the MIT license:
 * http://www.opensource.org/licenses/MIT
-*
-* НАСТРОЙКА
-* @change function. Получение объекта файла. Если null — не обрабатывается
-*   - file object   - объект файла, содержащий информацию о выбранном файле и методы:
-*         $preview: function (item, [field])       //item - модель, field - поле с миниатюрой, которое добавится в модель (если не указано, берется по умолчанию)
-*                                                  //Возвращает обещание с колбеками: success, error
-*         $upload:  function (url, item, [permit]) //url - скрипт загрузки, item - модель (можно указать {}), permit - объект параметров валидации (см. ниже)
-*                                                  //Возвращает обещание с колбеками: success, error, notice
-*
-*  В колбеки обещания передается xhr (или макет, при загрузке через iframe), дополненный полями:
-*  item: {...}           //модель, в которую осуществлялась загрузка
-*  response: {...}       //ответ сервера, раскодированный из JSON
-*  uploadingItems: [...] //Массив элементов, загружающийся в данный момент
-*
-* @validate function. Валидация файлов
-*   - file object   - объект файла
-*   - permit object - параметры для валидации. Пример:
-*         allowedType: ["jpeg", "jpg", "png", "gif"], //список разрешенных расширений
-*         maxNumberOfFiles: 100, //максимальное количество файлов
-*         maxSize: 4194304,      //максимальный размер файла
-*         maxSpace: 104857600,   //максимально доступное место на сервере
-*         quantity: 3,           //загружено файлов
-*         space: 481208,         //занято места
-*         errorBadType: "Можно загружать: JPEG, JPG, PNG, GIF", //Фразы ошибок...
-*         errorBigSize: "Вес не более 4 МБ",
-*         errorMaxQuantity: "Загружено максимальное количество файлов: 100",
-*         errorMaxSize: "Осталось 2,3 МБ свободного места"
-*   - return object - массив объектов ошибок [{msg: 'текст ошибки', code: 'код'}, {...}, ... ]
-*
-* @setError function. Обработка ошибок
-*   - code string - код ошибки
-*   - data object - xhr (или макет, при загрузке через iframe), дополненный полями:
-*         item: {...}     //модель, в которую осуществлялась загрузка
-*         response: {...} //ответ сервера, раскодированный из JSON
-*
-* @url string.          Путь по умолчанию до скрипта загрузки
-* @fieldName string.    Ключ в массиве $_FILES - 'Files'
-* @fileClass string.    Имя класса, если перетаскивается файл - 'dragover-file'
-* @notFileClass string. Имя класса, если перетаскивается не файл - 'dragover-plain'
-*  
-* Имена полей, добавляемых в модель (для каждого файла)
-* @fileName string.      Имя файла - 'filename'
-* @fileThumb string.     Ссылка на миниатюру - 'thumb',
-* @fileSize string.      Размер файла, байт - 'size',
-* @fileLoaded string.    Количество загруженный байт - 'loaded'
-* @fileProgress string.  Процент загрузки (в конце это поле удалится) - 'progress'
-* @fileUploading string. Находится ли файл в процессе загрузки - 'uploading' 
-*
-* Имена полей, добавляемых в область видимости
-* @queue string. Очередь загрузки - 'uploading'. Содержит так же общие параметры:
-*                queue.total    - общий вес загружаемых файлов
-*                queue.loaded   - общий вес загруженных файлов
-*                queue.progress - общий прогресс загружаемых файлов
-*                queue.all      - количество загружаемых файлов
-*                queue.lenght   - количество загруженных файлов (родное свойство массива, кстати ;)
 */
 
 angular.module('oi.file', [])
 
-  //Настройка по умолчанию
+  //Default settings
   .value('oiFileConfig', {
   
-    //Обработка выбранных файлов
+    //Processing of selected files
     change: function (file) {
-      //Загружаем файл сразу после добавления
+      //Uploading after addition by default
+      //По умолчанию загружаем файл сразу после добавления
       file.$upload(this.url, {});
     },
     
-    //Валидация
+    //Validate
     validate: function (file, permit) {
 
       var errors = [];
@@ -98,7 +44,7 @@ angular.module('oi.file', [])
       return errors.length ? errors : false;
     },
     
-    //Получение текста ошибки и передача его в обработчик ошибок
+    //Error handle
     setError: function (code, data) {
       
       var response = data.data;
@@ -106,29 +52,29 @@ angular.module('oi.file', [])
 
       if (!errors.length) {
         switch (code) {
-          case 'drop'    : errors.push({msg: 'Перетаскивание файлов не поддерживается. Обновите браузер', code: code}); break;
-          case 'validate': errors.push({msg: 'Файл не прошел валидацию', code: code});                                  break;
-          case 'preview' : errors.push({msg: 'Чтение миниматюр не поддерживается. Обновите браузер', code: code});      break;
-          case 'load'    : errors.push({msg: 'Невозможно загрузить файл. Нет соединения с интернетом', code: code});    break;
-          case 'upload'  : errors.push({msg: 'Невозможно загрузить файл. Проблемы на сервере', code: code});            break;
-          case 'abort'   : errors.push({msg: 'Загрузка прервана', code: code});                                         break;
+          case 'drop'    : errors.push({msg: 'Drag and drop is not supported. Upgrade your browser', code: code}); break;
+          case 'validate': errors.push({msg: 'The file is invalid', code: code});                                  break;
+          case 'preview' : errors.push({msg: 'Thumbnails are not supported. Upgrade your browser', code: code});   break;
+          case 'load'    : errors.push({msg: 'Unable to load file. No connection to the Internet', code: code});   break;
+          case 'upload'  : errors.push({msg: 'Unable to load file. Server problem', code: code});                  break;
+          case 'abort'   : errors.push({msg: 'Download aborted', code: code});                                     break;
         }
       }
       if (data.item[this.fileLoaded]) {
-        delete data.item[this.fileLoaded]; //Сбрасываем прогресс
+        delete data.item[this.fileLoaded];
         delete data.item[this.fileProgress];
         delete data.item[this.fileUploading];
       }
       return {item: data.item, response: errors};
     },
     
-    //Параметры
-    url:           'uploader.php',  //Скрипт загрузки
-    fieldName:     'Files',         //Ключ в массиве $_FILES
-    fileClass:     'dragover-file', //Имя класса, если перетаскивается файл
-    notFileClass:  'dragover-plain',//Имя класса, если перетаскивается не файл
+    //Options
+    url:           'uploader.php',  //Download script
+    fieldName:     'Files',         //Key in $_FILES array
+    fileClass:     'dragover-file', //Draggable file class name
+    notFileClass:  'dragover-plain',//Draggable non-file class name
 
-    //Поля, добавляемые в модель
+    //Fields added to the model
     fileName:      'filename',
     fileThumb:     'thumb',
     fileSize:      'size',
@@ -136,23 +82,25 @@ angular.module('oi.file', [])
     fileProgress:  'progress',
     fileUploading: 'uploading',
     
-    //Поля, добавляемые в область видимости
-    queue: 'uploading' //Очередь загрузки. Содержит так же общие параметры:
-                       // queue.total    - общий вес загружаемых файлов
-                       // queue.loaded   - общий вес загруженных файлов
-                       // queue.progress - общий прогресс загружаемых файлов
-                       // queue.all      - количество загружаемых файлов
-                       // queue.lenght   - количество загруженных файлов (родное свойство массива, кстати ;)  
+    //Fields added to the scope
+    queue: 'uploading' //Uploading queue. Contains a general options:
+                       // queue.total    - all files size, bytes
+                       // queue.loaded   - all files loaded, bytes
+                       // queue.progress - all files upload percentage
+                       // queue.all      - number of uploaded files
+                       // queue.lenght   - number of remaining files (native option)
   })
   
   .directive('oiFile', ['oiFileConfig', '$q', '$compile', '$timeout', function (oiFileConfig, $q, $compile, $timeout) {
   
-    var queue = []; //Очередь файлов на загрузку. Вынесена отдельно, т.к. упрощает поочередную загрузку фалов и решает проблему циклических ссылок на xhr
+    //Uploading queue. Taken out separately, because it make files downloading easy and solves the problem of circular references to xhr
+    //Очередь файлов для загрузки. Вынесена отдельно, т.к. упрощает поочередную загрузку фалов и решает проблему циклических ссылок на xhr
+    var queue = [];
     
     return {
       link: function (scope, element, attrs) {
     
-        //Настройка загрузчика
+        //Reading settings
         var opts = {};
         
         angular.extend(opts, oiFileConfig);
@@ -163,7 +111,7 @@ angular.module('oi.file', [])
         
         scope[opts.queue] = queue;
 
-        //Перетаскивание файлов на поле
+        //Drag and drop files onto the area
         element
           .bind('drop', function(e) {
             var dataTransfer = e.dataTransfer ? e.dataTransfer : e.originalEvent.dataTransfer; // jQuery fix;
@@ -183,6 +131,7 @@ angular.module('oi.file', [])
             e.preventDefault();  
             dataTransfer.dropEffect = 'copy';
             
+            //Check that you drag the file
             //Проверяем, что перетаскиваются именно файлы
             dataTransfer && dataTransfer.types && dataTransfer.types.indexOf('Files') >= 0 ? element.addClass(opts.fileClass) : element.addClass(opts.notFileClass);
           })
@@ -194,16 +143,16 @@ angular.module('oi.file', [])
             element.removeClass(opts.fileClass + ' ' + opts.notFileClass);
           })
         
-        //Выбор файлов в диалоге
+        //Selecting files in the dialog (input type="file")
           .bind('change', function () {
             _add(this.files ? this.files : this);
-            //_add(this);
+            //_add(this); //to check the download via iframe
           });
           
-        //Добавление файлов в очередь загрузки
+        //Adding files to the download queue
         function _add(files) {
           if (typeof opts.change === 'function') {
-            // iframe fix for old browsers
+            //iframe fix for old browsers
             if (angular.isElement(files)) {
               var input = angular.element(files),
                   form = angular.element('<form style="display: none;" />'),
@@ -225,7 +174,8 @@ angular.module('oi.file', [])
             
             scope.$apply(function (scope) {
               for (var i = 0, n = files.length; i < n; i++) {
-                // Создаем объект файла для модели
+                //Create a file object to be combined with a model
+                //Создаем объект файла для объединения с моделью
                 var file = {
                   $upload: _upload,
                   $preview: _preview,
@@ -239,6 +189,7 @@ angular.module('oi.file', [])
                 file[opts.fileProgress]  = 0;
                 file[opts.fileUploading] = true;
 
+                //Pass each file into a function that uploads it
                 //Передаем каждый файл в функцию, которая отправит его на загрузку
                 opts.change(file);
               }
@@ -246,7 +197,7 @@ angular.module('oi.file', [])
           }
         }
         
-        //Предпросмотр файлов
+        //Files preview
         function _preview (item, thumb) {
           var previewDeferred = $q.defer(),
               data = {item: item, response: {}};
@@ -260,7 +211,8 @@ angular.module('oi.file', [])
               return function (event) {
                 if (event.target.result.indexOf('data:image') !== -1) {
                   scope.$apply(function(){
-                    //Файл прочитан
+                    //If the file is read
+                    //Если файл прочитан
                     item[thumb] = reader.result;
                     data.response[thumb] = reader.result;
                     
@@ -272,6 +224,7 @@ angular.module('oi.file', [])
             reader.readAsDataURL(this._file);
             
           } else if (typeof opts.preview === 'function') {
+            //Reading files is not supported
             //Чтение файлов не поддерживается
             previewDeferred.reject(opts.setError('preview', {item: item, response: null}))
           }
@@ -279,7 +232,7 @@ angular.module('oi.file', [])
           return previewDeferred.promise;
         }
                    
-        //Загрузка файлов         
+        //Download files     
         function _upload (url, item, permit) {
         
           var uploadDeferred = $q.defer();
@@ -294,17 +247,20 @@ angular.module('oi.file', [])
             uploadDeferred.reject(opts.setError('validate', {item: item, data: errors}));
             return uploadDeferred.promise;
           }
-
+          
+          //Collect all the necessary data to load into a single object and place it in the queue
           //Собираем все необходимые для загрузки данные в один объект и помещаем его в очередь
           var uploadObject = {
             url:      url,
             item:     item,
             deferred: uploadDeferred,
-            xhr: undefined //ссылку на xhr храним в очереди, а не в модели файла (item), чтобы избежать циклической ссылки, т.к. в xhr хранится ссылка на item
-                           //иначе возникает ошибка (Error: An attempt was made to use an object that is not, or is no longer, usable.)
+            xhr: undefined //reference to xhr store in queue, but not in the file model (item), to avoid circular references, because xhr contains a reference to item
+                           //ссылку на xhr храним в очереди, а не в модели файла (item), чтобы избежать циклической ссылки, т.к. в xhr хранится ссылка на item
+                           //otherwise, an error: //иначе возникает ошибка: (Error: An attempt was made to use an object that is not, or is no longer, usable.)
           }
           queue.push(uploadObject);
           
+          //Start downloading the addition of the first file (until download is completed the rest of the items will be added to the same queue, or will create a new queue)
           //Начинаем загрузку при добавлении первого файла (пока загрузка не завершена остальные элементы будут добавляться в эту же очередь, иначе создастся новая очередь)
           if (queue.length === 1) {
             queue.total    = item[opts.fileSize];
@@ -319,18 +275,21 @@ angular.module('oi.file', [])
             queue.all++;
           }
           
+          //Download the following file starts when the previous loaded or aborted
           //Загрузка следующего файла начинается когда предыдущий загружен либо отменен
           function _uploadQueue () {
             if (queue.length) {
             
               queue[0].item._file._form ? _iframeTransport(queue[0]) : _xhrTransport(queue[0]);
               
-              queue[0].deferred.promise.finally(function () { //Работает с AngularJS 1.2. В старых версиях используйте all вместо finally
+              queue[0].deferred.promise.finally(function () { //for AngularJS 1.2. Use all instead of finally in old versions
+                //Delete this and move on to the next element in the queue in case the download is complete or an error (including due to cancellation)
                 //Удаляем этот и переходим к следующему элементу очереди в случае завершения загрузки или ошибки (в т. ч. из-за отмены)
                 queue.shift();
                 _uploadQueue();
               })
             } else {
+              //Clear the queue when all files have been uploaded
               //Обнуляем очередь когда все файлы загружены
               delete queue.total;
               delete queue.loaded;
@@ -342,17 +301,20 @@ angular.module('oi.file', [])
           return uploadDeferred.promise;
         }
         
-        //Отмена загрузки
+        //Cancel download
         function _abort () {
+          //forEach is used for the closure for transmission each element value in setTimeout
           //forEach используется для организации замыкания для передачи каждого элемента value в setTimeout
           angular.forEach(queue, function (value, key) {
             if (value.item === this) {
               if (value.xhr) {
-                //Если запустить abort напрямую возникает ошибка (Error: apply already in progress)
+                //If you call abort without setTimeout, you get error: apply already in progress
+                //Если запустить abort напрямую возникает ошибка: apply already in progress
                 setTimeout(function () {
                   value.xhr.abort();
                 }, 0)
               } else {
+                //Remove the element from the queue that has not yet started to upload
                 //Удаляем из очереди элемент, который еще не начал загружаться
                 queue.splice(key, 1);
               }
@@ -363,7 +325,7 @@ angular.module('oi.file', [])
           }, this)
         }
         
-        //xhr-загрузчик
+        //xhr-transport
         function _xhrTransport (uObj) {
       
           var xhr = new XMLHttpRequest(),
@@ -381,24 +343,25 @@ angular.module('oi.file', [])
           xhr.upload.addEventListener('progress', function (e) {
             
             scope.$apply(function () {
-              //Вычисляем прогресс загрузки файла
+              //Calculate the file upload progress
               uObj.item[opts.fileLoaded]   = e.lengthComputable ? e.loaded : undefined;
               uObj.item[opts.fileProgress] = e.lengthComputable ? Math.round(e.loaded * 100 / e.total) : undefined;
               
-              //Вычисляем общий прогресс загрузки всех файлов
+              //Calculate the overall progress of downloading all files
               queue.loaded += uObj.item[opts.fileLoaded];
               queue.progress = Math.round(queue.loaded * 100 / queue.total);
               xhr.data = e;
               
-              uObj.deferred.notify(xhr); //Работает с AngularJS 1.2. Не используйте в старых версиях
+              uObj.deferred.notify(xhr); //Work with AngularJS 1.2. Not use for old versions
             });
           }, false);
 
           xhr.addEventListener('load', function () {
                   
             var response = xhr.data = _parseJSON(xhr.responseText);
-
-            delete uObj.item._file; //удаляем техническую информацию о загружаемом файле из модели
+            
+            //remove technical information about uploaded file from the model
+            delete uObj.item._file;
             delete uObj.item.$abort;
             delete uObj.item[opts.fileProgress];
             delete uObj.item[opts.fileLoaded];
@@ -435,7 +398,7 @@ angular.module('oi.file', [])
           xhr.send(form);
         }
 
-        //iframe-загрузчик
+        //iframe-transport
         function _iframeTransport (uObj) {
           
           uObj.xhr = false;
@@ -469,11 +432,13 @@ angular.module('oi.file', [])
               response = _parseJSON(rawResponse);
             } catch (e) {}
             
-            form.remove(); //Удаляем скрытую форму
-            delete uObj.item._file; //удаляем техническую информацию о загружаемом файле из модели
+            form.remove(); //Remove hidden form
+            delete uObj.item._file; //remove technical information about uploaded file from the model
 
             scope.$apply(function () {
-              if (response && !response.error) { //Нельзя узнать статус загрузки во фрейм, поэтому ошибка определяется наличием параметра error в ответе
+              if (response && !response.error) {
+                //It is impossible to know the status of loading into the frame, so we now if error when response contans error parameter
+                //Нельзя узнать статус загрузки во фрейм, поэтому ошибка определяется наличием параметра error в ответе
                 angular.extend(uObj.item, response);
                 uObj.deferred.resolve({item: uObj.item, response: response});
 
@@ -486,7 +451,7 @@ angular.module('oi.file', [])
           form[0].submit();
         }
         
-        //Парсим JSON
+        //Parse JSON
         function _parseJSON (data) {
         
           if (typeof data !== 'object') {
