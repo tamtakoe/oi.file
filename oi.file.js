@@ -335,11 +335,7 @@ angular.module('oi.file', [])
           uObj.xhr = xhr;
           
           form.append(opts.fieldName, uObj.item._file);
-
-          angular.forEach( uObj.item._file.headers, function (value, name) {
-            xhr.setRequestHeader(name, value);
-          });
-              
+          
           xhr.upload.addEventListener('progress', function (e) {
             
             scope.$apply(function () {
@@ -395,6 +391,11 @@ angular.module('oi.file', [])
           }, false);
 
           xhr.open('POST', uObj.url, true);
+          
+          angular.forEach( uObj.item._file.headers, function (value, name) {
+            xhr.setRequestHeader(name, value);
+          });
+          
           xhr.send(form);
         }
 
