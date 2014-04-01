@@ -1,0 +1,23 @@
+{
+  "name": "oi.file",
+  "main": "oi.file.js",
+  "version": "0.0.0",
+  "homepage": "https://github.com/tamtakoe/oi.file",
+  "description": "Angular file uploader",
+  "keywords": [
+    "angularjs",
+    "fileuploader"
+  ],
+  "authors": [
+    "tamtakoe"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "src/vendors/",
+    "test",
+    "tests"
+  ]
+}
