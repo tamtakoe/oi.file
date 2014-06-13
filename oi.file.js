@@ -334,7 +334,7 @@ angular.module('oi.file', [])
           xhr.item = uObj.item;
           uObj.xhr = xhr;
           
-          form.append(opts.fieldName, uObj.item._file);
+          form.append(opts.fieldName, uObj.item._file, uObj.item.filename);
           
           xhr.upload.addEventListener('progress', function (e) {
             
