@@ -133,7 +133,14 @@ angular.module('oi.file', [])
             
             //Check that you drag the file
             //Проверяем, что перетаскиваются именно файлы
-            dataTransfer && dataTransfer.types && dataTransfer.types.indexOf('Files') >= 0 ? element.addClass(opts.fileClass) : element.addClass(opts.notFileClass);
+            if (dataTransfer && dataTransfer.types) {
+                if (dataTransfer.types instanceof Array) {
+                    dataTransfer.types.indexOf('Files') >= 0 ? element.addClass(opts.fileClass) : element.addClass(opts.notFileClass);
+                } else {
+                    //fix for Firefox (because dataTransfer.types is a DOMStringList)
+                    dataTransfer.types.contains('Files') ? element.addClass(opts.fileClass) : element.addClass(opts.notFileClass);
+                }
+            }
           })
           
           .bind('dragleave', function(e) {
