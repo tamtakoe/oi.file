@@ -1,0 +1,18 @@
+{
+    "name":    "oi.file",
+    "license": "MIT",
+    "version": "0.0.0",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/tamtakoe/oi.file.git"
+    },
+    "files": [
+        "oi.file.js",
+        "oi.file.old.js"
+    ],
+    "main": "oi.file.js",
+    "devDependencies": {},
+    "peerDependencies": {
+        "angular": ">=1.2"
+    }
+}
